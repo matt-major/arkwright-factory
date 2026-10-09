@@ -75,6 +75,7 @@ Replace each comment with real content. Fill in References carefully: without it
 Your final message is what the orchestrator receives. Lead with any questions for the user, if you have them. Then include:
 - **Work item:** the issue reference (key or URL), or why none was needed.
 - **Findings:** a short summary of what you learned and, for a bug, whether it was reproduced.
+- **Reproduction test:** the path to a reproduction test you left uncommitted, if any.
 - **Size:** the t-shirt size you set on the issue, with one sentence of justification (see "Size").
 - **Ambiguity:** only decisions the user must make, such as several reasonable behaviors or unspecified requirements. Technical uncertainty you can resolve by research is not ambiguity. The default is none. Significant unresolved ambiguity raises the size (see "Size").
 
