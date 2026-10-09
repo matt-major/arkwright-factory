@@ -1,7 +1,7 @@
-# Hugo Factory
+# Arkwright Factory
 
-Hugo is a team of coding agents that takes a piece of work from a rough request
-to a reviewed pull request. You describe a bug or a feature to Hugo. It
+Arkwright is a team of coding agents that takes a piece of work from a rough request
+to a reviewed pull request. You describe a bug or a feature to Arkwright. It
 investigates, writes a plan for you to approve, has the change made and
 reviewed, and hands you a PR to merge.
 
@@ -13,21 +13,21 @@ already use.
 
 ## How it works
 
-You only ever talk to Hugo. Behind it are four specialist agents:
+You only ever talk to Arkwright. Behind it are four specialist agents:
 
 | Agent | Job |
 | --- | --- |
-| `hugo` | Talks to you and hands work to the other agents. Never edits code. |
+| `arkwright` | Talks to you and hands work to the other agents. Never edits code. |
 | `triage` | Researches the request, reproduces bugs, and finds or creates the issue. |
 | `plan` | Interviews you, then writes the plan and commits it to the branch. |
 | `implement` | Makes the change, proves it works, and opens the PR. |
-| `review` | Reviews the PR adversarially and reports back to Hugo. Never edits code. |
+| `review` | Reviews the PR adversarially and reports back to Arkwright. Never edits code. |
 
 ```mermaid
 flowchart LR
     req([Your request]) --> triage
 
-    subgraph hugo [Hugo coordinates]
+    subgraph arkwright [Arkwright coordinates]
         direction LR
         triage[Triage] --> plan[Plan]
         plan --> approve{You approve?}
@@ -49,10 +49,10 @@ flowchart LR
     class merge done
 ```
 
-Hugo skips stages that aren't needed: a trivial fix doesn't need a plan, and a
+Arkwright skips stages that aren't needed: a trivial fix doesn't need a plan, and a
 link to an open issue doesn't need triage.
 
-Hugo stops and waits for you when:
+Arkwright stops and waits for you when:
 
 - a plan is ready, because no code is written until you approve it
 - an agent has a question for you
@@ -68,7 +68,7 @@ into the current project or globally.
 Clone this repository next to your project:
 
 ```bash
-git clone https://github.com/matt-major/hugo-factory.git
+git clone https://github.com/matt-major/arkwright-factory.git
 ```
 
 Then run the script from inside your project:
@@ -78,7 +78,7 @@ cd your-project
 ```
 
 ```bash
-../hugo-factory/install.sh
+../arkwright-factory/install.sh
 ```
 
 To skip the questions, name the tool and scope:
@@ -86,31 +86,31 @@ To skip the questions, name the tool and scope:
 Claude Code:
 
 ```bash
-../hugo-factory/install.sh claude
+../arkwright-factory/install.sh claude
 ```
 
 Codex CLI:
 
 ```bash
-../hugo-factory/install.sh codex
+../arkwright-factory/install.sh codex
 ```
 
 GitHub Copilot CLI:
 
 ```bash
-../hugo-factory/install.sh copilot
+../arkwright-factory/install.sh copilot
 ```
 
 Every tool found on your PATH:
 
 ```bash
-../hugo-factory/install.sh all
+../arkwright-factory/install.sh all
 ```
 
 Globally, for every project:
 
 ```bash
-../hugo-factory/install.sh -g all
+../arkwright-factory/install.sh -g all
 ```
 
 | Option | Effect |
@@ -126,7 +126,7 @@ Globally, for every project:
 | Codex CLI | `.codex/agents/` | `~/.codex/agents/` |
 | Copilot CLI | `.github/agents/` | `~/.copilot/agents/` |
 
-Codex reads profiles only from its home directory, so Hugo's Codex profile
+Codex reads profiles only from its home directory, so Arkwright's Codex profile
 always goes to `~/.codex`, even for a project install. Codex also loads project
 agents only in a trusted project.
 
@@ -134,26 +134,26 @@ To update, pull this repository and run the script again.
 
 ## Usage
 
-Start Hugo from inside the repository you want to work on, then tell it what
+Start Arkwright from inside the repository you want to work on, then tell it what
 you want done, for example "the login page 500s when the email has a plus
 sign", or paste a link to an issue.
 
 Claude Code:
 
 ```bash
-claude --agent hugo
+claude --agent arkwright
 ```
 
 Codex CLI:
 
 ```bash
-codex -p hugo
+codex -p arkwright
 ```
 
 GitHub Copilot CLI:
 
 ```bash
-copilot --agent hugo
+copilot --agent arkwright
 ```
 
 Your forge and issue tracker need to be reachable from the tool, for example
@@ -163,10 +163,10 @@ update issues.
 ## Layout
 
 ```
-claude/agents/             Claude Code  (*.md)
-codex/agents/              Codex CLI    (*.toml)
-codex/hugo.config.toml     Hugo's Codex profile
-copilot/agents/            Copilot CLI  (*.agent.md)
+claude/agents/                  Claude Code  (*.md)
+codex/agents/                   Codex CLI    (*.toml)
+codex/arkwright.config.toml     Arkwright's Codex profile
+copilot/agents/                 Copilot CLI  (*.agent.md)
 install.sh
 ```
 

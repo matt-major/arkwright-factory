@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs the Hugo agents for Claude Code, Codex CLI, and GitHub Copilot CLI,
+# Installs the Arkwright agents for Claude Code, Codex CLI, and GitHub Copilot CLI,
 # either into the current project or globally.
 # Usage: path/to/install.sh [-p|--project] [-g|--global] [-y|--yes] [--link] [claude|codex|copilot|all]
 #   -p, --project  Install into the current project (its git root, or the current directory).
@@ -38,7 +38,7 @@ if [[ -z $choice && $yes == true ]]; then
   choice=all
 elif [[ -z $choice ]]; then
   [[ -t 0 ]] || usage
-  echo "Which tool should Hugo be installed for?"
+  echo "Which tool should Arkwright be installed for?"
   echo "  1) Claude Code"
   echo "  2) Codex CLI"
   echo "  3) GitHub Copilot CLI"
@@ -116,26 +116,26 @@ for tool in "${tools[@]}"; do
   case "$tool" in
     claude)  install_files "$claude_dir" "$REPO_ROOT"/claude/agents/*.md ;;
     codex)   install_files "$codex_dir" "$REPO_ROOT"/codex/agents/*.toml
-             # Codex reads profiles only from its home, so Hugo's is always global.
-             install_files "$CODEX_HOME" "$REPO_ROOT/codex/hugo.config.toml" ;;
+             # Codex reads profiles only from its home, so Arkwright's is always global.
+             install_files "$CODEX_HOME" "$REPO_ROOT/codex/arkwright.config.toml" ;;
     copilot) install_files "$copilot_dir" "$REPO_ROOT"/copilot/agents/*.agent.md ;;
   esac
 done
 
 echo
-echo "Start Hugo with:"
+echo "Start Arkwright with:"
 for tool in "${tools[@]}"; do
   case "$tool" in
-    claude)  echo "  claude --agent hugo" ;;
-    codex)   echo "  codex -p hugo" ;;
-    copilot) echo "  copilot --agent hugo" ;;
+    claude)  echo "  claude --agent arkwright" ;;
+    codex)   echo "  codex -p arkwright" ;;
+    copilot) echo "  copilot --agent arkwright" ;;
   esac
 done
 
 if [[ $scope == project && " ${tools[*]} " == *" codex "* ]]; then
   echo
   echo "Note: Codex loads project agents only in a trusted project. Trust this"
-  echo "project when Codex asks. Hugo's Codex profile is always installed to"
+  echo "project when Codex asks. Arkwright's Codex profile is always installed to"
   echo "$CODEX_HOME, because Codex reads profiles only from there."
 fi
 
