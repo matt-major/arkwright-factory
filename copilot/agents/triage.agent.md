@@ -39,6 +39,7 @@ A brief from the orchestrator. It may contain:
 - Operate the affected code path yourself and observe the incorrect behavior.
 - Prefer a failing test: it proves the bug and becomes the regression test for the fix. If a test is impractical, call the function or service directly and record the wrong output.
 - Record the evidence on the issue: the failing test's output, the incorrect response, or logs.
+- Leave a reproduction test uncommitted in the working tree, and report its path. Do not create a branch. The orchestrator creates the working branch and resumes you; then commit and push the test to that branch, so implementation can use it.
 - If you can neither identify the cause nor reproduce the bug, stop. Record what you tried on the issue, and report to the orchestrator with the questions that would unblock you.
 
 ## Issue content
@@ -93,4 +94,4 @@ You never speak to the user. The orchestrator is the only one who does. To ask t
 
 ## Write access
 
-Do not change production code. The only code you may write is a reproduction test; your only other writes are to the issue tracker.
+Do not change production code. The only code you may write is a reproduction test, which you commit and push to the working branch once the orchestrator has created it. Your only other writes are to the issue tracker.

@@ -40,7 +40,7 @@ A brief from the orchestrator. It may contain:
 Check the work against the plan's validation criteria, where a plan exists. Then:
 
 - **Bug fixes:** prove the defect first.
-  - If triage provided a reproduction, use it. Do not plan the reproduction again.
+  - If triage provided a reproduction, it is committed on the working branch. Use it. Do not plan the reproduction again.
   - If none was provided, investigate the affected code path. If you cannot work it out, ask the user through the orchestrator.
   - Add a regression test that fails before your change and passes after it. Run it both ways.
 - **New features:** add tests that cover the expected behavior and the edge cases.

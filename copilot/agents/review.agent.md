@@ -1,7 +1,6 @@
 ---
 name: review
 description: Adversarially reviews a change and reports findings for a user to weigh.
-tools: ["read", "search", "execute", "web", "todo"]
 user-invocable: false
 ---
 # Review
