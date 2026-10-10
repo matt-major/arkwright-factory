@@ -1,62 +1,84 @@
 #!/usr/bin/env bash
-# Installs the agents for each tool, either into the current project or
-# globally into the tool's user-level agent directory.
-# Usage: path/to/install.sh [-g|--global] [-p|--project] [-y|--yes] [--link] [claude] [codex] [copilot]
-#   -g, --global   Install into your user directory, for every project.
-#   -p, --project  Install into the current project: its git root, or the current directory (the default).
-#   -y, --yes      Don't prompt; use the defaults for anything not given.
+# Installs the Arkwright agents for Claude Code, Codex CLI, and GitHub Copilot CLI,
+# either into the current project or globally.
+# Usage: path/to/install.sh [-p|--project] [-g|--global] [-y|--yes] [--link] [claude|codex|copilot|all]
+#   -p, --project  Install into the current project (its git root, or the current directory).
+#   -g, --global   Install into your home directory, for every project.
+#   -y, --yes      Don't prompt. Anything not given defaults to: all, project.
 #   --link         Symlink the files instead of copying, so `git pull` updates them.
-#   With no tool names, installs for every tool found on PATH.
+#   all            Install for every tool found on your PATH.
+# Anything not given on the command line is asked for.
 set -euo pipefail
 
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-# The project is the enclosing git repository, or the current directory outside one.
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
 
 usage() {
-  echo "usage: $0 [-g|--global] [-p|--project] [-y|--yes] [--link] [claude] [codex] [copilot]" >&2
+  echo "usage: $0 [-p|--project] [-g|--global] [-y|--yes] [--link] [claude|codex|copilot|all]" >&2
   exit 1
 }
 
+choice=""
 scope=""
 yes=false
 mode=copy
-tools=()
 for arg in "$@"; do
   case "$arg" in
-    -g|--global) scope=global ;;
     -p|--project) scope=project ;;
+    -g|--global) scope=global ;;
     -y|--yes) yes=true ;;
     --link) mode=link ;;
-    claude|codex|copilot) tools+=("$arg") ;;
+    claude|codex|copilot|all) choice="$arg" ;;
     *) usage ;;
   esac
 done
 
-if [[ ${#tools[@]} -eq 0 ]]; then
+if [[ -z $choice && $yes == true ]]; then
+  choice=all
+elif [[ -z $choice ]]; then
+  [[ -t 0 ]] || usage
+  echo "Which tool should Arkwright be installed for?"
+  echo "  1) Claude Code"
+  echo "  2) Codex CLI"
+  echo "  3) GitHub Copilot CLI"
+  echo "  4) All installed tools"
+  read -r -p "Choose [4]: " reply
+  case "${reply:-4}" in
+    1) choice=claude ;;
+    2) choice=codex ;;
+    3) choice=copilot ;;
+    4) choice=all ;;
+    *) echo "Invalid choice: $reply" >&2; exit 1 ;;
+  esac
+fi
+
+if [[ -z $scope && $yes == true ]]; then
+  scope=project
+elif [[ -z $scope ]]; then
+  [[ -t 0 ]] || usage
+  echo "Where should it be installed?"
+  echo "  1) Project: into $PROJECT_ROOT, to commit and share with your team"
+  echo "  2) Global:  into your home directory, for every project"
+  read -r -p "Choose [1]: " reply
+  case "${reply:-1}" in
+    1) scope=project ;;
+    2) scope=global ;;
+    *) echo "Invalid choice: $reply" >&2; exit 1 ;;
+  esac
+fi
+
+tools=()
+if [[ $choice == all ]]; then
   for tool in claude codex copilot; do
     command -v "$tool" >/dev/null && tools+=("$tool")
   done
   if [[ ${#tools[@]} -eq 0 ]]; then
-    echo "No supported tool found on PATH. Name one: claude, codex, or copilot." >&2
+    echo "No supported tool found on your PATH: claude, codex, or copilot." >&2
     exit 1
   fi
-fi
-
-if [[ -z $scope ]]; then
-  scope=project
-  if [[ $yes == false && -t 0 ]]; then
-    echo "Install the agents for: ${tools[*]}"
-    echo "  1) Project: into $PROJECT_ROOT, to commit and share with your team"
-    echo "  2) Global:  into your home directory, for every project"
-    read -r -p "Choose [1]: " choice
-    case "${choice:-1}" in
-      1) scope=project ;;
-      2) scope=global ;;
-      *) echo "Invalid choice: $choice" >&2; exit 1 ;;
-    esac
-  fi
+else
+  tools=("$choice")
 fi
 
 if [[ $scope == project ]]; then
@@ -64,13 +86,13 @@ if [[ $scope == project ]]; then
     echo "Run this from the project you want to install into, or pass --global." >&2
     exit 1
   fi
-  base="$PROJECT_ROOT"
-  codex_dir="$base/.codex"
-  copilot_dir="$base/.github/agents"
+  claude_dir="$PROJECT_ROOT/.claude/agents"
+  codex_dir="$PROJECT_ROOT/.codex/agents"
+  copilot_dir="$PROJECT_ROOT/.github/agents"
 else
-  base="$HOME"
-  codex_dir="$CODEX_HOME"
-  copilot_dir="$base/.copilot/agents"
+  claude_dir="$HOME/.claude/agents"
+  codex_dir="$CODEX_HOME/agents"
+  copilot_dir="$HOME/.copilot/agents"
 fi
 
 # install_files <dest-dir> <file>...
@@ -81,7 +103,7 @@ install_files() {
     # Remove first, so a copy never writes through a symlink from an earlier --link.
     rm -f "$dest/$(basename "$file")"
     if [[ $mode == link ]]; then
-      ln -sf "$file" "$dest/"
+      ln -s "$file" "$dest/"
     else
       cp "$file" "$dest/"
     fi
@@ -92,20 +114,29 @@ install_files() {
 for tool in "${tools[@]}"; do
   echo "$tool:"
   case "$tool" in
-    claude)  install_files "$base/.claude/agents" "$REPO_ROOT"/claude/agents/*.md ;;
-    codex)   install_files "$codex_dir/agents" "$REPO_ROOT"/codex/agents/*.toml
-             # Codex reads profiles only from its home, so Hugo's is always global.
-             install_files "$CODEX_HOME" "$REPO_ROOT/codex/hugo.config.toml" ;;
+    claude)  install_files "$claude_dir" "$REPO_ROOT"/claude/agents/*.md ;;
+    codex)   install_files "$codex_dir" "$REPO_ROOT"/codex/agents/*.toml
+             # Codex reads profiles only from its home, so Arkwright's is always global.
+             install_files "$CODEX_HOME" "$REPO_ROOT/codex/arkwright.config.toml" ;;
     copilot) install_files "$copilot_dir" "$REPO_ROOT"/copilot/agents/*.agent.md ;;
+  esac
+done
+
+echo
+echo "Start Arkwright with:"
+for tool in "${tools[@]}"; do
+  case "$tool" in
+    claude)  echo "  claude --agent arkwright" ;;
+    codex)   echo "  codex -p arkwright" ;;
+    copilot) echo "  copilot --agent arkwright" ;;
   esac
 done
 
 if [[ $scope == project && " ${tools[*]} " == *" codex "* ]]; then
   echo
   echo "Note: Codex loads project agents only in a trusted project. Trust this"
-  echo "project when Codex asks, or add it under [projects] in $CODEX_HOME/config.toml."
-  echo "Hugo's Codex profile is always installed globally, because Codex reads"
-  echo "profiles only from $CODEX_HOME."
+  echo "project when Codex asks. Arkwright's Codex profile is always installed to"
+  echo "$CODEX_HOME, because Codex reads profiles only from there."
 fi
 
 if [[ $scope == project && $mode == link ]]; then
