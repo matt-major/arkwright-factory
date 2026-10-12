@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Installs the Arkwright agents for Claude Code, Codex CLI, and GitHub Copilot CLI,
-# either into the current project or globally.
-# Usage: path/to/install.sh [-p|--project] [-g|--global] [-y|--yes] [--link] [claude|codex|copilot|all]
-#   -p, --project  Install into the current project (its git root, or the current directory).
-#   -g, --global   Install into your home directory, for every project.
-#   -y, --yes      Don't prompt. Anything not given defaults to: all, project.
+# Installs the Arkwright agents for Claude Code, Codex CLI, and GitHub Copilot CLI
+# into your home directory, or into the current project with --project.
+# Usage: path/to/install.sh [-p|--project] [-y|--yes] [--link] [claude|codex|copilot|all]
+#   -p, --project  Install into the current project (its git root, or the current directory)
+#                  instead of your home directory.
+#   -y, --yes      Don't prompt. Defaults to all tools.
 #   --link         Symlink the files instead of copying, so `git pull` updates them.
 #   all            Install for every tool found on your PATH.
-# Anything not given on the command line is asked for.
+# A tool not given on the command line is asked for.
 set -euo pipefail
 
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
@@ -15,18 +15,17 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
 
 usage() {
-  echo "usage: $0 [-p|--project] [-g|--global] [-y|--yes] [--link] [claude|codex|copilot|all]" >&2
+  echo "usage: $0 [-p|--project] [-y|--yes] [--link] [claude|codex|copilot|all]" >&2
   exit 1
 }
 
 choice=""
-scope=""
+scope=global
 yes=false
 mode=copy
 for arg in "$@"; do
   case "$arg" in
     -p|--project) scope=project ;;
-    -g|--global) scope=global ;;
     -y|--yes) yes=true ;;
     --link) mode=link ;;
     claude|codex|copilot|all) choice="$arg" ;;
@@ -53,21 +52,6 @@ elif [[ -z $choice ]]; then
   esac
 fi
 
-if [[ -z $scope && $yes == true ]]; then
-  scope=project
-elif [[ -z $scope ]]; then
-  [[ -t 0 ]] || usage
-  echo "Where should it be installed?"
-  echo "  1) Project: into $PROJECT_ROOT, to commit and share with your team"
-  echo "  2) Global:  into your home directory, for every project"
-  read -r -p "Choose [1]: " reply
-  case "${reply:-1}" in
-    1) scope=project ;;
-    2) scope=global ;;
-    *) echo "Invalid choice: $reply" >&2; exit 1 ;;
-  esac
-fi
-
 tools=()
 if [[ $choice == all ]]; then
   for tool in claude codex copilot; do
@@ -83,7 +67,7 @@ fi
 
 if [[ $scope == project ]]; then
   if [[ $PROJECT_ROOT == "$REPO_ROOT" ]]; then
-    echo "Run this from the project you want to install into, or pass --global." >&2
+    echo "Run this from the project you want to install into, or drop --project." >&2
     exit 1
   fi
   claude_dir="$PROJECT_ROOT/.claude/agents"

@@ -61,64 +61,61 @@ Arkwright stops and waits for you when:
 
 ## Install
 
-Clone this repository, then run the script. It asks which tool to install for
-(Claude Code, Codex, Copilot, or all that are installed) and whether to install
-into the current project or globally.
-
-Clone this repository next to your project:
+Clone this repository first:
 
 ```bash
 git clone https://github.com/matt-major/arkwright-factory.git
 ```
 
-Then run the script from inside your project:
+```bash
+cd arkwright-factory
+```
+
+To run the interactive installer, run:
+
+```bash
+./install.sh
+```
+
+To skip the questions, you can install it directly to your tool of choice:
+
+```bash
+./install.sh claude
+```
+
+```bash
+./install.sh codex
+```
+
+```bash
+./install.sh copilot
+```
+
+Or install it for every supported tool on your PATH at once:
+
+```bash
+./install.sh all
+```
+
+By default the installer installs the agents into your global tool directory. If you'd like to install them only in a single project instead, run the script inside your project directory and pass the argument `--project`:
 
 ```bash
 cd your-project
 ```
 
 ```bash
-../arkwright-factory/install.sh
+../arkwright-factory/install.sh --project claude
 ```
 
-To skip the questions, name the tool and scope:
-
-Claude Code:
-
-```bash
-../arkwright-factory/install.sh claude
-```
-
-Codex CLI:
-
-```bash
-../arkwright-factory/install.sh codex
-```
-
-GitHub Copilot CLI:
-
-```bash
-../arkwright-factory/install.sh copilot
-```
-
-Every tool found on your PATH:
-
-```bash
-../arkwright-factory/install.sh all
-```
-
-Globally, for every project:
-
-```bash
-../arkwright-factory/install.sh -g all
-```
+There are a few extra flags to customise the installation if you need them:
 
 | Option | Effect |
 | --- | --- |
-| `-p`, `--project` | Install into the current project. |
-| `-g`, `--global` | Install into your home directory. |
-| `-y`, `--yes` | Don't ask. Defaults to all tools, in the project. |
-| `--link` | Symlink the files instead of copying them. Don't commit symlinks. |
+| `-p`, `--project` | Install into the current project instead of your home directory. |
+| `-y`, `--yes` | Don't ask. Defaults to all tools. |
+| `--link` | Symlink the files instead of copying them. |
+
+The installer will install the agents at the following locations, depending on your choices:
 
 | Tool | Project | Global |
 | --- | --- | --- |
@@ -160,7 +157,7 @@ Your forge and issue tracker need to be reachable from the tool, for example
 through the `gh` CLI or an MCP server, so the agents can open PRs and read and
 update issues.
 
-## Layout
+## Repository Layout
 
 ```
 claude/agents/                  Claude Code  (*.md)
@@ -170,8 +167,7 @@ copilot/agents/                 Copilot CLI  (*.agent.md)
 install.sh
 ```
 
-The copies for each tool are maintained by hand. When you change how an agent
-behaves, make the same change in all three folders.
+To change an agent or the installer, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
